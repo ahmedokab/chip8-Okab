@@ -1,0 +1,9 @@
+CXX = g++
+CXXFLAGS = -std=c++17 -I./SDL2/include
+LDFLAGS = -L./SDL2/lib -lSDL2main -lSDL2
+
+SRC = src/main.cpp src/chip8.cpp
+OUT = chip8
+
+all:
+	$(CXX) $(CXXFLAGS) $(SRC) $(LDFLAGS) -o $(OUT).exe
