@@ -13,7 +13,7 @@ class chip8 {
         unsigned char memory[4096]; //4096 memory locations
         unsigned char V[16]; // the 16 registers
         unsigned short I; // 12 bit address register used w/ many operaations that involve memory operations
-        unsigned short PC;//value from 0x000 to 0xFFF
+        unsigned short pc;//value from 0x000 to 0xFFF
         unsigned char delay_timer;
         unsigned char sound_timer; // There are two timer registers that count at 60hz
         //when set above 0, they count down to 0
