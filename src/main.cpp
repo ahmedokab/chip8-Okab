@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "chip8.h"
+#include "tinyfiledialogs.h"
 
 chip8 myChip8;
 
@@ -12,7 +13,7 @@ SDL_Renderer* renderer = nullptr;
 const int WINDOW_SCALE = 10;
 const int SCREEN_WIDTH = 64;
 const int SCREEN_HEIGHT = 32;
-const int cycles_perframe = 10;
+const int cycles_perframe = 15;
 
 const SDL_Keycode keymap[16] = {
     SDLK_x, // 0
@@ -115,11 +116,29 @@ int main(int argc, char **argv){
 
     // initialze the chip8 system and load game into memory
     myChip8.initialize(); //powers up virtual chip-9 console by clearing memory, changingpc, resetting registers etc.
-    myChip8.loadGame("PONG.ch8");
+
+
+        const char *filter_patterns[1] = { "*.ch8" };
+    const char *romPath = tinyfd_openFileDialog(
+        "Choose a CHIP-8 ROM! Project by Ahmed Okab",  // title
+        "",                     // default path
+        1,                      // number of filters
+        filter_patterns,       // filter patterns
+        "CHIP-8 ROMs",          // filter description
+        0                       // allow multiple select
+    );
+
+    if (!romPath) {
+        std::cout << "No ROM selected.\n";
+        return 1;
+    }
+
+        myChip8.loadGame(romPath);
 
     while(true){
         for(int i = 0; i < cycles_perframe; ++i){
             myChip8.emulateCycle();
+            setKeys();// if we press or release a key, we should store this in a part that emulates the keypad
         }
 
         if (myChip8.drawFlag){ // 0x00E0 – Clears the screen
@@ -127,7 +146,6 @@ int main(int argc, char **argv){
             drawGraphics();
         }
 
-        setKeys();  // if we press or release a key, we should store this in a part that emulates the keypad
 
         SDL_Delay(16);
     }

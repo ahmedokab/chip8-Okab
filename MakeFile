@@ -1,29 +1,23 @@
-# Compiler and flags
 CXX = g++
 CXXFLAGS = -Wall -std=c++17
-LDFLAGS = -lSDL2
-
-# Directories
 SRC_DIR = src
 OBJ_DIR = obj
 BIN = chip8.exe
 
-# Source and object files
-SRC = $(wildcard $(SRC_DIR)/*.cpp)
-OBJ = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
+SRCS = $(wildcard $(SRC_DIR)/*.cpp) $(SRC_DIR)/tinyfiledialogs.c
+OBJS = $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRCS:.cpp=.o))
+OBJS := $(OBJS:.c=.o)
 
-# Default target
-all: $(BIN)
+LIBS = -lSDL2 -lole32 -luuid -lcomdlg32
 
-# Link
-$(BIN): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+$(BIN): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
-# Compile each .cpp to .o
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	rm -rf $(OBJ_DIR) *.exe
+	rm -f $(OBJ_DIR)/*.o $(BIN)

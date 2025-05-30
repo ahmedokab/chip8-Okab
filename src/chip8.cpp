@@ -70,8 +70,27 @@ void chip8::initialize() {
 
 // --- Load ROM into memory ---
 void chip8::loadGame(const char* filename) {
-    // TODO: Open binary file and load it into memory[0x200...]
+    const unsigned short START_ADDRESS = 0x200; //loads the ROM at the address starting from x200
+
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open ROM: " << filename << std::endl;
+        exit(1);
+    }
+
+    std::streamsize romsize = file.tellg(); //tellg tells us current file pointer location, this gives us the romsize because std::ios::ate is at the end so gives us romsize
+    if (romsize > (4096 - START_ADDRESS)) {
+        std::cerr << "ROM too large to fit in memory." << std::endl;
+        exit(1);
+    }
+
+    file.seekg(0, std::ios::beg); //moves file pointer back to the beginning
+    file.read(reinterpret_cast<char*>(&memory[START_ADDRESS]), romsize); //reading from the file into the memory from the starting address byte by byte until the end of the rom
+    file.close();
+
+    std::cout << "Loaded ROM: " << filename << " (" << romsize << " bytes)" << std::endl;
 }
+
 
 // --- Emulate One CPU Cycle ---
 void chip8::emulateCycle() {
@@ -265,7 +284,7 @@ void chip8::emulateCycle() {
             pixel = memory[I + h]; //reads that single row of the spite
             for(int bit = 0; bit < 8; bit++){
                 if((pixel & (0x80 >> bit)) != 0){ //checks if that current bit in the row we are checking is a 1, by bitmasking it. If it is, then we draw
-                    int drawIndex = (x+bit) + ((y + h) * 64); // using row major order i + j * nc  to get access index
+                    int drawIndex = ((x+bit)) + (((y + h) * 64)); // using row major order i + j * nc  to get access index
                     if (gfx[drawIndex] == 1) {
                         V[0xF] = 1; // Pixel was on and now will be turned off. There was a collision
                     }
@@ -274,9 +293,10 @@ void chip8::emulateCycle() {
 
             }
             
-            drawFlag = true; // flag triggered so screen will be redrawn. We changed our gfx array and thus need to update the screen
-            pc += 2; // move to next opcode
+
         }
+        drawFlag = true; // flag triggered so screen will be redrawn. We changed our gfx array and thus need to update the screen
+        pc += 2; // move to next opcode
         break;  }
 
         case 0xE000:
@@ -299,39 +319,111 @@ void chip8::emulateCycle() {
 
         case 0xF000:
             switch(opcode & 0x0FF){
-                case 0x07:
-
+                case 0x07: 
+                    V[(opcode & 0x0F00) >> 8] = delay_timer;
+                    pc += 2;
                 break;
 
-                case 0x0A:
+                case 0x0A:{
+                    // waiting for a key press then storing the value of the key in Vx
+                    bool pressed = false;
+                    
+                    for(int i = 0; i < 16; ++i){
+                        if (key[i] != 0){
+                            V[(opcode & 0x0F00) >> 8] = i;  //Vx = key index that has been pressed
+                            pressed = true;
+                            break;
+                        }
+                    }
 
-                break;
+                    if (!pressed){
+                        return; // wait for the key to be pressed, do not advance pc
+
+                    }
+
+                    pc += 2; //advance program counter if it was pressed
+                } break;
 
                 case 0x15:
-
+                    delay_timer =  V[(opcode & 0x0F00) >> 8];
+                    pc += 2; //setting delaytimer to Vx
                 break;
 
                 case 0x18:
-
+                    sound_timer =  V[(opcode & 0x0F00) >> 8];
+                    pc += 2; //setting soundtimer to Vx
                 break;
 
-                case 0x1E:
-
+                case 0x1E: //memory operation, adds vx to I
+                    I += V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
                 break;
 
                 case 0x29:
+                {
+                    // FX29: Set I = location of sprite for digit Vx
+                    unsigned char digit = V[(opcode & 0x0F00) >> 8];  // get the digit (0x0 - 0xF)
+                    I = digit * 5;  // Each character sprite is 5 bytes long
+                    pc += 2;
+                    break;
+                }
 
-                break;
+
 
                 case 0x33:
+                {
+                    unsigned char value = V[(opcode & 0x0F00) >> 8];
+                    unsigned char hundreds = 0;
+                    unsigned char tens = 0;
+                    unsigned char ones = 0;
 
+                    // Count hundreds
+                    while (value >= 100) {
+                        value -= 100;
+                        ++hundreds;
+                    }
+
+                    // Count tens
+                    while (value >= 10) {
+                        value -= 10;
+                        ++tens;
+                    }
+
+                    // Remaining is ones
+                    ones = value;
+
+                    memory[I]     = hundreds;
+                    memory[I + 1] = tens;
+                    memory[I + 2] = ones;
+                    pc += 2;
+                
                 break;
+                }
             
                 case 0x55:
+                    {
+                        unsigned char loopval = ((opcode & 0x0F00) >> 8);
 
-                break;
+                        for(int i = 0; i <= loopval; ++i){
+                            memory[I + i] = V[i];
+                        }
+                        pc += 2;
+                        break;
+                    }
+
+
 
                 case 0x65:
+                        {
+                        unsigned char loopval = ((opcode & 0x0F00) >> 8);
+
+                        for(int i = 0; i <= loopval; ++i){
+                           V[i] = memory[I + i];
+                        }
+                        pc += 2;
+                        break;
+                    }
+
 
                 break;
 
@@ -343,9 +435,6 @@ void chip8::emulateCycle() {
 
         default:
             printf("Unknown opcode: 0x%X\n", opcode);
-
-
-
     }
 
     // TODO: Update timers
@@ -354,8 +443,7 @@ void chip8::emulateCycle() {
  
   if(sound_timer > 0)
   {
-    if(sound_timer == 1)
-      printf("BEEP!\n");
+    if(sound_timer == 1) std::cout << "BEEP\n";  
     --sound_timer;
   }  
 
