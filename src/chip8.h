@@ -3,11 +3,11 @@ class chip8 {
         void initialize();
         void loadGame(const char* fileName);
         void emulateCycle();
-        void SetKeys();
 
         bool drawFlag;
         unsigned char gfx[64 * 32]; // the graphics of the Chip 8 are black and white
         // the screen has a total of 2048 pixels (64 x 32). This can be implemented using an array that holds the pixel state, either a 1 or a 0.
+        unsigned char key[16];
     private:
         unsigned short opcode;
         unsigned char memory[4096]; //4096 memory locations
@@ -19,5 +19,7 @@ class chip8 {
         //when set above 0, they count down to 0
         unsigned short stack[16];
         unsigned short sp; // this is the stack pointer
+
+
     
-}
+};

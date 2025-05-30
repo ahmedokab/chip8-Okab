@@ -1,9 +1,29 @@
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -I./SDL2/include
-LDFLAGS = -L./SDL2/lib -lSDL2main -lSDL2
+CXXFLAGS = -Wall -std=c++17
+LDFLAGS = -lSDL2
 
-SRC = src/main.cpp src/chip8.cpp
-OUT = chip8
+# Directories
+SRC_DIR = src
+OBJ_DIR = obj
+BIN = chip8.exe
 
-all:
-	$(CXX) $(CXXFLAGS) $(SRC) $(LDFLAGS) -o $(OUT).exe
+# Source and object files
+SRC = $(wildcard $(SRC_DIR)/*.cpp)
+OBJ = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
+
+# Default target
+all: $(BIN)
+
+# Link
+$(BIN): $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Compile each .cpp to .o
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean
+clean:
+	rm -rf $(OBJ_DIR) *.exe
