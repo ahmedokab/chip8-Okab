@@ -35,6 +35,7 @@ const SDL_Keycode keymap[16] = {
 };
 
 
+
 bool setupGraphics(){
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0){
         SDL_Log("Could not initialize SDL subsystems %s\n" , SDL_GetError());
@@ -123,17 +124,17 @@ int main(int argc, char **argv){
         "Choose a CHIP-8 ROM! Project by Ahmed Okab",  // title
         "",                     // default path
         1,                      // number of filters
-        filter_patterns,       // filter patterns
-        "CHIP-8 ROMs",          // filter description
-        0                       // allow multiple select
+        filter_patterns,     
+        "CHIP-8 ROMs",          
+        0                       //  multiple select?
     );
 
     if (!romPath) {
-        std::cout << "No ROM selected.\n";
+        std::cout << "No ROM selected.\n"; // no rom selected if path just doesnt exist
         return 1;
     }
 
-        myChip8.loadGame(romPath);
+        myChip8.loadGame(romPath); //LOAD
 
     while(true){
         for(int i = 0; i < cycles_perframe; ++i){
@@ -145,7 +146,14 @@ int main(int argc, char **argv){
             // 0xDXYN – Draws a sprite on the screen
             drawGraphics();
         }
-
+        if(myChip8.delay_timer > 0)
+            --myChip8.delay_timer;
+ 
+        if(myChip8.sound_timer > 0)
+        {
+        if(myChip8.sound_timer == 1) std::cout << "BEEP\n";  
+        --myChip8.sound_timer;
+        } 
 
         SDL_Delay(16);
     }

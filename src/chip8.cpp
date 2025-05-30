@@ -1,15 +1,13 @@
 #include "chip8.h"
 #include <iostream>
 #include <fstream>   // for loading ROM
-#include <cstring>   // for memset, etc.
-#include <ctime>
+#include <cstring>   
 #include <cstdlib>
+#include <ctime>
 
 
 
-// --- Fontset (fill in later or copy from guide) ---
 unsigned char chip8_fontset[80] = {
-    // TODO: Fill with actual CHIP-8 fontset data (each character = 5 bytes)
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
     0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -28,10 +26,8 @@ unsigned char chip8_fontset[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-// --- CHIP-8 Initialization ---
 void chip8::initialize() {
-    // TODO: Reset memory, registers, PC, stack, timers, load fontset
-    std::srand(std::time(nullptr));
+    std::srand(time(nullptr));
     pc     = 0x200;  // Program counter starts at 0x200
     opcode = 0;      // Reset current opcode	
     I      = 0;      // Reset index register
@@ -64,11 +60,12 @@ void chip8::initialize() {
     for(int i = 0; i < 80; ++i)
         memory[i] = chip8_fontset[i];		
     
-    // Reset timers
-    
-}
+    delay_timer = 0;
+    sound_timer = 0;
+    //INitializes the timers to make sure cpu cycle runs correctly    
+}   
 
-// --- Load ROM into memory ---
+
 void chip8::loadGame(const char* filename) {
     const unsigned short START_ADDRESS = 0x200; //loads the ROM at the address starting from x200
 
@@ -78,7 +75,7 @@ void chip8::loadGame(const char* filename) {
         exit(1);
     }
 
-    std::streamsize romsize = file.tellg(); //tellg tells us current file pointer location, this gives us the romsize because std::ios::ate is at the end so gives us romsize
+    std::streamsize romsize = file.tellg(); //telling tells us current file pointer location, this gives us the romsize because std::ios::ate is at the end so gives us romsize
     if (romsize > (4096 - START_ADDRESS)) {
         std::cerr << "ROM too large to fit in memory." << std::endl;
         exit(1);
@@ -92,9 +89,9 @@ void chip8::loadGame(const char* filename) {
 }
 
 
-// --- Emulate One CPU Cycle ---
+// emulating one CPU cycle
 void chip8::emulateCycle() {
-    // TODO: Fetch, decode, execute one opcode
+   //Fetch, decode, execute one opcode
     // to implement fetch
     opcode = memory[pc] << 8 | memory[pc + 1]; // in order to merge both bytes and store them in unsigned short(2 bytes datatype), 
     // using bitwise OR operation to merge
@@ -284,6 +281,7 @@ void chip8::emulateCycle() {
             pixel = memory[I + h]; //reads that single row of the spite
             for(int bit = 0; bit < 8; bit++){
                 if((pixel & (0x80 >> bit)) != 0){ //checks if that current bit in the row we are checking is a 1, by bitmasking it. If it is, then we draw
+                    if (((x+bit) >= 64) || ((y + h) >= 32)) continue; //preventing a object from going out of bounds
                     int drawIndex = ((x+bit)) + (((y + h) * 64)); // using row major order i + j * nc  to get access index
                     if (gfx[drawIndex] == 1) {
                         V[0xF] = 1; // Pixel was on and now will be turned off. There was a collision
@@ -437,15 +435,7 @@ void chip8::emulateCycle() {
             printf("Unknown opcode: 0x%X\n", opcode);
     }
 
-    // TODO: Update timers
-  if(delay_timer > 0)
-        --delay_timer;
  
-  if(sound_timer > 0)
-  {
-    if(sound_timer == 1) std::cout << "BEEP\n";  
-    --sound_timer;
-  }  
 
 }
 
