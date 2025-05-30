@@ -2,7 +2,7 @@
 
 Have you ever wondered what goes on under the hood in a gaming console? Well, I did, and so I decided to recreate the Chip-8, an interpreted programming language from the mid 1970's, able to run classics like Pong, Space Invaders, Tetris & many more games!
 
-In the process, I developed my lower-level programming skills to recreate a CPU's fetch-decode-execute cycle using opcode handling in C, all of which was handled by an infinite while(true) loop. The loop ran a large emulateCycle() many times per frame (which I had to experiment to find). This function served as the base of my program, with a switch-case statement handling each opcode, utilizing my skills of bit-masking, shifting and lower level concepts to decode the opcode and manipulating the program counter as well as other memory locations differently for each instruction.
+In the process, I developed my lower-level programming skills to recreate a CPU's fetch-decode-execute cycle using opcode handling in C, all of which was handled by an infinite while(true) loop. The loop ran a large emulateCycle() many times per frame (which I had to experiment to find). This function served as the base of my program, with a switch-case statement handling each opcode, utilizing my skills of bit-masking, bit shifting and lower level concepts to decode the opcode and manipulating the program counter as well as other memory locations differently for each instruction.
 
 ## 🛠️ Features
 
