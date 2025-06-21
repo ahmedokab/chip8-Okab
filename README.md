@@ -6,11 +6,11 @@ In the process, I developed my lower-level programming skills to recreate a CPU'
 
 ## 🛠️ Features
 
-- ✅ Opcode decoding for all 35 official CHIP-8 instructions
-- ✅ Cycle-based emulation loop (timing matters!)
-- ✅ Input handling via SDL2 with keys mapped from the original CHIP-8 to another input system (details below)
-- ✅ Graphics rendering using XOR sprites - providing a flicker present in the old Chip-8
-- ✅ Loads and runs public domain CHIP-8 ROMs flawlessly
+- Opcode decoding for all 35 official CHIP-8 instructions
+-  Cycle-based emulation loop 
+-  Input handling via SDL2 with keys mapped from the original CHIP-8 to another input system (details below)
+-  Graphics rendering using XOR sprites - providing a flicker present in the old Chip-8
+-  Loads and runs public domain CHIP-8 ROMs flawlessly
 
 ## 🛠️ INPUT
 | CHIP-8 Key | Mapped To |
