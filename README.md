@@ -4,6 +4,8 @@ Have you ever wondered what goes on under the hood in a gaming console? Well, I 
 
 In the process, I developed my lower-level programming skills to recreate a CPU's fetch-decode-execute cycle using opcode handling in C, all of which was handled by an infinite while(true) loop. The loop ran a large emulateCycle() many times per frame (which I had to experiment to find). This function served as the base of my program, with a switch-case statement handling each opcode, utilizing my skills of bit-masking, bit shifting and lower level concepts to decode the opcode and manipulating the program counter as well as other memory locations differently for each instruction.
 
+<img width="655" height="361" alt="image" src="https://github.com/user-attachments/assets/f439728b-e9ca-419b-8e0f-90f4e15139b1" />
+
 ## 🛠️ Features
 
 - Opcode decoding for all 35 official CHIP-8 instructions
